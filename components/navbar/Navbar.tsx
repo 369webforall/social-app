@@ -8,7 +8,6 @@ import {
   PlusCircleIcon,
   MessageCircle,
   Contact2Icon,
-  LogInIcon,
   HandshakeIcon,
   BookOpenIcon,
 } from "lucide-react";
@@ -38,11 +37,11 @@ const Navbar = () => {
             <HomeIcon />
             <span>Homepage</span>
           </Link>
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/friends" className="flex items-center gap-2">
             <HandshakeIcon />
             <span>Friends</span>
           </Link>
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/stories" className="flex items-center gap-2">
             <BookOpenIcon />
             <span>Stories</span>
           </Link>
@@ -76,7 +75,6 @@ const Navbar = () => {
           </SignedIn>
           <SignedOut>
             <div className="flex items-center gap-2 text-sm">
-              <LogInIcon />
               <Link href="/sign-in">Login</Link>
             </div>
           </SignedOut>

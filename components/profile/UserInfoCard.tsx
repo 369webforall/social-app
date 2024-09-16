@@ -1,6 +1,13 @@
 import React from "react";
 import Link from "next/link";
-import { MapPinned, School, Briefcase } from "lucide-react";
+import {
+  MapPinned,
+  School,
+  Briefcase,
+  Link as WebLink,
+  CalendarDays,
+} from "lucide-react";
+import { Button } from "../ui/button";
 const UserInfoCard = ({ userId }: { userId: string }) => {
   return (
     <div className="p-4 bg-white rounded-lg shadow-md text-sm flex flex-col gap-4">
@@ -41,6 +48,20 @@ const UserInfoCard = ({ userId }: { userId: string }) => {
             work at <b>Petrotec</b>
           </span>
         </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <WebLink />
+            <span>https://dev.com</span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <CalendarDays /> Joined {new Date().getFullYear()}
+          </div>
+        </div>
+        <Button className="bg-blue-600 mt-4">Following</Button>
+        <Link href="/" className="self-end text-red-600">
+          Block User
+        </Link>
       </div>
     </div>
   );

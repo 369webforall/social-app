@@ -24,10 +24,10 @@ export default async function ProfilePage({
       },
     },
   });
-  console.log(user);
+
   if (!user) return notFound();
 
-  let isBloacked;
+  let isBlocked;
 
   if (currentUserId) {
     const res = await prisma.block.findFirst({
@@ -38,12 +38,13 @@ export default async function ProfilePage({
     });
 
     if (res) {
-      isBloacked = true;
+      isBlocked = true;
     }
   } else {
-    isBloacked = false;
+    isBlocked = false;
   }
-  if (!isBloacked) notFound();
+
+  if (isBlocked) notFound();
 
   return (
     <div className="p-6 font-[family-name:var(--font-geist-sans)] flex gap-6">
@@ -92,7 +93,7 @@ export default async function ProfilePage({
         </div>
       </div>
       <div className="hidden lg:block w-[30%]">
-        <RightMenu userId="dev" />
+        <RightMenu user={user} />
       </div>
     </div>
   );

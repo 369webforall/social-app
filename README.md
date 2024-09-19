@@ -215,3 +215,235 @@ export const switchFollow = async (userId: string) => {
   }
 };
 ```
+
+---
+
+## work on media component
+
+- open components/profile/UserMediaCard.tsx
+- Fetch all the images from post belonging to the user.
+- make your function async
+- add data to post to see the result.
+
+```ts
+const postWithMedia = await prisma.post.findMany({
+  where: {
+    userId: user.id,
+    img: {
+      not: null,
+    },
+  },
+  take: 8,
+  orderBy: {
+    createdAt: "desc",
+  },
+});
+```
+
+## update UserInfoCard.tsx
+
+- for logged in user profile we don't want to see follow and block button.
+
+```ts
+{
+  currentUserId && currentUserId !== user.id && (
+    <UserInfoCardInteraction
+      userId={user.id}
+      isUserBlocked={isUserBlocked}
+      isFollowing={isFollowing}
+      isFollowingSent={isFollowingSent}
+    />
+  );
+}
+```
+
+## update friend request component.
+
+- FriendRequests.tsx
+
+```ts
+const { userId } = auth();
+if (!userId) return null;
+
+const requests = await prisma.followRequest.findMany({
+  where: {
+    receiverId: userId,
+  },
+  include: {
+    sender: true,
+  },
+});
+```
+
+- create FriendRequestList.tsx component
+
+```ts
+"use client";
+
+import { acceptFollowRequest, declineFollowRequest } from "@/lib/actions";
+import { FollowRequest, User } from "@prisma/client";
+import Image from "next/image";
+import { useOptimistic, useState } from "react";
+
+type RequestWithUser = FollowRequest & {
+  sender: User;
+};
+
+const FriendRequestList = ({ requests }: { requests: RequestWithUser[] }) => {
+  const [requestState, setRequestState] = useState(requests);
+
+  const accept = async (requestId: number, userId: string) => {
+    removeOptimisticRequest(requestId);
+    try {
+      await acceptFollowRequest(userId);
+      setRequestState((prev) => prev.filter((req) => req.id !== requestId));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const decline = async (requestId: number, userId: string) => {
+    removeOptimisticRequest(requestId);
+    try {
+      await declineFollowRequest(userId);
+      setRequestState((prev) => prev.filter((req) => req.id !== requestId));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const [optimisticRequests, removeOptimisticRequest] = useOptimistic(
+    requestState,
+    (state, value: number) => state.filter((req) => req.id !== value)
+  );
+  return (
+    <div className="">
+      {optimisticRequests.map((request) => (
+        <div className="flex items-center justify-between" key={request.id}>
+          <div className="flex items-center gap-4">
+            <Image
+              src={request.sender.avatar || "/noAvatar.png"}
+              alt=""
+              width={40}
+              height={40}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+            <span className="font-semibold">
+              {request.sender.name && request.sender.surname
+                ? request.sender.name + " " + request.sender.surname
+                : request.sender.username}
+            </span>
+          </div>
+          <div className="flex gap-3 justify-end">
+            <form action={() => accept(request.id, request.sender.id)}>
+              <button>
+                <Image
+                  src="/accept.png"
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="cursor-pointer"
+                />
+              </button>
+            </form>
+            <form action={() => decline(request.id, request.sender.id)}>
+              <button>
+                <Image
+                  src="/reject.png"
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="cursor-pointer"
+                />
+              </button>
+            </form>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default FriendRequestList;
+```
+
+- FriendRequest.tsx
+
+```ts
+{
+  /* USER */
+}
+<FriendRequestList requests={requests} />;
+```
+
+- Add server actions - actions.ts
+
+```ts
+export const acceptFollowRequest = async (userId: string) => {
+  const { userId: currentUserId } = auth();
+
+  if (!currentUserId) {
+    throw new Error("User is not Authenticated!!");
+  }
+
+  try {
+    const existingFollowRequest = await prisma.followRequest.findFirst({
+      where: {
+        senderId: userId,
+        receiverId: currentUserId,
+      },
+    });
+
+    if (existingFollowRequest) {
+      await prisma.followRequest.delete({
+        where: {
+          id: existingFollowRequest.id,
+        },
+      });
+
+      await prisma.follower.create({
+        data: {
+          followerId: userId,
+          followingId: currentUserId,
+        },
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    throw new Error("Something went wrong!");
+  }
+};
+
+export const declineFollowRequest = async (userId: string) => {
+  const { userId: currentUserId } = auth();
+
+  if (!currentUserId) {
+    throw new Error("User is not Authenticated!!");
+  }
+
+  try {
+    const existingFollowRequest = await prisma.followRequest.findFirst({
+      where: {
+        senderId: userId,
+        receiverId: currentUserId,
+      },
+    });
+
+    if (existingFollowRequest) {
+      await prisma.followRequest.delete({
+        where: {
+          id: existingFollowRequest.id,
+        },
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    throw new Error("Something went wrong!");
+  }
+};
+```
+
+## Update the profile page
+
+- If we are the owner of the profile page then we can update the profile page.
+- conditionaly display the profile update button.
+-

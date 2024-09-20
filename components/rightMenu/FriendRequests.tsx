@@ -7,10 +7,11 @@ import FriendRequestList from "./FriendRequestList";
 
 const FriendRequests = async () => {
   const { userId } = auth();
+  console.log(userId);
   if (!userId) return null;
   const requests = await prisma.followRequest.findMany({
     where: {
-      receiverId: userId,
+      senderId: userId,
     },
     include: {
       sender: true,

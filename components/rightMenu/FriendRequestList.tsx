@@ -12,6 +12,7 @@ type RequestWithUser = FollowRequest & {
 
 const FriendRequestList = ({ requests }: { requests: RequestWithUser[] }) => {
   const [requestState, setRequestState] = useState(requests);
+  console.log(requests);
 
   const accept = async (requestId: number, userId: string) => {
     removeOptimisticRequest(requestId);
@@ -36,6 +37,8 @@ const FriendRequestList = ({ requests }: { requests: RequestWithUser[] }) => {
     requestState,
     (state, value: number) => state.filter((req) => req.id !== value)
   );
+
+  console.log(optimisticRequests);
   return (
     <div className="">
       {optimisticRequests.map((request) => (

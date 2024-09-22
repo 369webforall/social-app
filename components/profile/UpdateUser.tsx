@@ -1,11 +1,27 @@
 "use client";
 import { User } from "@prisma/client";
-import React, { useState } from "react";
+import React, { useState, useActionState } from "react";
 import Image from "next/image";
 import { updateProfile } from "@/lib/actions";
+import { CldUploadWidget } from "next-cloudinary";
+import { useRouter } from "next/navigation";
+import UpdateButton from "./UpdateButton";
+import { FaceIcon } from "@radix-ui/react-icons";
 const UpdateUser = ({ user }: { user: User }) => {
   const [open, setOpen] = useState(false);
-  const handleClose = () => setOpen(false);
+  const [cover, setCover] = useState<any>(false);
+
+  const router = useRouter();
+
+  const [state, formAction] = useActionState(updateProfile, {
+    success: false,
+    error: false,
+  });
+
+  const handleClose = () => {
+    setOpen(false);
+    state.success && router.refresh();
+  };
   return (
     <div className="">
       <span
@@ -14,29 +30,47 @@ const UpdateUser = ({ user }: { user: User }) => {
       >
         Update
       </span>
+
       {open && (
         <div className="absolute w-screen h-screen top-0 left-0 bg-black bg-opacity-65 flex items-center justify-center z-50">
           <form
-            action={updateProfile}
+            action={(formData) =>
+              formAction({ formData, cover: cover?.secure_url })
+            }
             className="p-12 bg-white rounded-lg shadow-md flex flex-col gap-2 w-full md:w-1/2 xl:w-1/3 relative"
           >
             <h1>Update profile</h1>
             <div className="mt-4 textxs text-gray-500">
               Use the navbar profile to change the avatar or username
             </div>
-            <div>
-              <label htmlFor="">Cover Picture</label>
-              <div className="flex items-center gap-2 cursor-pointer">
-                <Image
-                  src={user.cover || "/noCover.png"}
-                  alt=""
-                  width={48}
-                  height={32}
-                  className="w-12 h-8 rounded-md object-cover"
-                />
-                <span className="text-xs underline text-gray-600">Change</span>
-              </div>
-            </div>
+            {/* COVER PIC UPLOAD */}
+            <CldUploadWidget
+              uploadPreset="social"
+              onSuccess={(result) => setCover(result.info)}
+            >
+              {({ open }) => {
+                return (
+                  <div
+                    className="flex flex-col gap-4 my-4"
+                    onClick={() => open()}
+                  >
+                    <label htmlFor="">Cover Picture</label>
+                    <div className="flex items-center gap-2 cursor-pointer">
+                      <Image
+                        src={user.cover || "/noCover.png"}
+                        alt=""
+                        width={48}
+                        height={32}
+                        className="w-12 h-8 rounded-md object-cover"
+                      />
+                      <span className="text-xs underline text-gray-600">
+                        Change
+                      </span>
+                    </div>
+                  </div>
+                );
+              }}
+            </CldUploadWidget>
             <div
               className="absolute text-xl right-2 top-3 cursor-pointer "
               onClick={handleClose}
@@ -132,9 +166,13 @@ const UpdateUser = ({ user }: { user: User }) => {
                 />
               </div>
             </div>
-            <button className="bg-blue-500 p-2 mt-2 rounded-md text-white">
-              Update
-            </button>
+            <UpdateButton />
+            {state.success && (
+              <span className="text-green-500">Profile has been updated!</span>
+            )}
+            {state.error && (
+              <span className="text-red-500">Something went wrong!</span>
+            )}
           </form>
         </div>
       )}

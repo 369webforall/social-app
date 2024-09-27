@@ -37,7 +37,6 @@ const FriendRequestList = ({ requests }: { requests: RequestWithUser[] }) => {
     (state, value: number) => state.filter((req) => req.id !== value)
   );
 
-  console.log(optimisticRequests);
   return (
     <div className="">
       {optimisticRequests.map((request) => (

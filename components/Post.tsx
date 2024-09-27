@@ -4,12 +4,15 @@ import Image from "next/image";
 import Comments from "./Comments";
 import { User, Post as PostType } from "@prisma/client";
 import PostInteraction from "./feed/PostInteraction";
+import PostInfo from "./feed/PostInfo";
+import { auth } from "@clerk/nextjs/server";
 type FeedPostType = PostType & { user: User } & {
   likes: { userId: string }[];
 } & {
   _count: { comments: number };
 };
 const Post = ({ post }: { post: FeedPostType }) => {
+  const { userId } = auth();
   return (
     <div className="flex flex-col gap-4">
       {/* User */}
@@ -26,7 +29,7 @@ const Post = ({ post }: { post: FeedPostType }) => {
               : post.user.username}
           </span>
         </div>
-        <Image src="/more.png" alt="more" width={16} height={16} />
+        {userId === post.user.id && <PostInfo postId={post.id} />}
       </div>
       {/* description */}
       <div className="flex flex-col  gap-4">

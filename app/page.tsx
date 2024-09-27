@@ -1,5 +1,5 @@
 import AddPost from "@/components/AddPost";
-import Feed from "@/components/Feed";
+import Feed from "@/components/feed/Feed";
 import Stories from "@/components/Stories";
 import RightMenu from "@/components/rightMenu/RightMenu";
 import LeftMenu from "@/components/leftMenu/LeftMenu";

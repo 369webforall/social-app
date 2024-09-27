@@ -1,4 +1,4 @@
-import Feed from "@/components/Feed";
+import Feed from "@/components/feed/Feed";
 import RightMenu from "@/components/rightMenu/RightMenu";
 import LeftMenu from "@/components/leftMenu/LeftMenu";
 import Image from "next/image";
@@ -89,7 +89,7 @@ export default async function ProfilePage({
               </div>
             </div>
           </div>
-          <Feed />
+          <Feed username={user.username} />
         </div>
       </div>
       <div className="hidden lg:block w-[30%]">

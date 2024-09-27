@@ -1,26 +1,19 @@
 "use client";
 import { User } from "@prisma/client";
-import React, { useState, useActionState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { updateProfile } from "@/lib/actions";
 import { CldUploadWidget } from "next-cloudinary";
 import { useRouter } from "next/navigation";
 import UpdateButton from "./UpdateButton";
-import { FaceIcon } from "@radix-ui/react-icons";
 const UpdateUser = ({ user }: { user: User }) => {
   const [open, setOpen] = useState(false);
-  const [cover, setCover] = useState<any>(false);
 
   const router = useRouter();
 
-  const [state, formAction] = useActionState(updateProfile, {
-    success: false,
-    error: false,
-  });
-
   const handleClose = () => {
     setOpen(false);
-    state.success && router.refresh();
+    router.refresh();
   };
   return (
     <div className="">
@@ -35,7 +28,7 @@ const UpdateUser = ({ user }: { user: User }) => {
         <div className="absolute w-screen h-screen top-0 left-0 bg-black bg-opacity-65 flex items-center justify-center z-50">
           <form
             action={(formData) =>
-              formAction({ formData, cover: cover?.secure_url })
+              updateProfile({ formData, cover: cover?.secure_url })
             }
             className="p-12 bg-white rounded-lg shadow-md flex flex-col gap-2 w-full md:w-1/2 xl:w-1/3 relative"
           >
@@ -167,12 +160,6 @@ const UpdateUser = ({ user }: { user: User }) => {
               </div>
             </div>
             <UpdateButton />
-            {state.success && (
-              <span className="text-green-500">Profile has been updated!</span>
-            )}
-            {state.error && (
-              <span className="text-red-500">Something went wrong!</span>
-            )}
           </form>
         </div>
       )}

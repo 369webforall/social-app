@@ -153,10 +153,10 @@ export const declineFollowRequest = async (userId: string) => {
   }
 };
 
-export const updateProfile = async (
-  prevState: { success: boolean; error: boolean },
-  payload: { formData: FormData; cover: string }
-) => {
+export const updateProfile = async (payload: {
+  formData: FormData;
+  cover: string;
+}) => {
   const { formData, cover } = payload;
   const fields = Object.fromEntries(formData);
 
@@ -183,7 +183,7 @@ export const updateProfile = async (
 
   if (!validatedFields.success) {
     console.log(validatedFields.error.flatten().fieldErrors);
-    return { success: false, error: true };
+    return "Error";
   }
 
   // Now update the profile
@@ -199,8 +199,61 @@ export const updateProfile = async (
       },
       data: validatedFields.data,
     });
-    return { success: true, error: false };
+    return "success";
   } catch (error) {
-    return { success: false, error: true };
+    return "Error";
+  }
+};
+
+export const switchLike = async (postId: number) => {
+  const { userId } = auth();
+  if (!userId) throw new Error("User is not authenticated");
+  try {
+    const existingLike = await prisma.like.findFirst({
+      where: {
+        postId,
+        userId,
+      },
+    });
+
+    if (existingLike) {
+      await prisma.like.delete({
+        where: {
+          id: existingLike.id,
+        },
+      });
+    } else {
+      await prisma.like.create({
+        data: {
+          postId,
+          userId,
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    throw new Error("Something went wrong");
+  }
+};
+
+export const addComment = async (postId: number, desc: string) => {
+  const { userId } = auth();
+  if (!userId) throw new Error("User is not authenticated!");
+
+  try {
+    const createdComment = await prisma.comment.create({
+      data: {
+        desc,
+        postId,
+        userId,
+      },
+      include: {
+        user: true,
+      },
+    });
+    return createdComment;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Something went wrong!");
   }
 };
